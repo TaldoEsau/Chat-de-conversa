@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .chat-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            max-height: 300px; /* Altura máxima para a caixa de chat */
+            overflow-y: auto; /* Rolagem automática */
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .message-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .message-input input[type="text"] {
+            flex: 1; /* Ocupa o espaço disponível */
+            margin-right: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .message-input button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            function fetchMessages() {
+                $.ajax({
+                    url: '/fetch_messages',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $('.chat-box').empty();
+                        $.each(data.messages, function(index, message) {
+                            $('.chat-box').append('<div class="message">' + message + '</div>');
+                        });
+                    },
+                    error: function(error) {
+                        console.log('Erro ao buscar mensagens:', error);
+                    }
+                });
+            }
+
+            setInterval(fetchMessages, 3000);
+
+            $('form').submit(function(event) {
+                event.preventDefault();
+                var username = $('input[name="username"]').val();
+                var message = $('input[name="message"]').val();
+                $.post('/send', {username: username, message: message}, function() {
+                    $('input[name="message"]').val('');
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Simple Chat</h1>
+    <div class="chat-box">
+        <!-- Mensagens serão adicionadas dinamicamente aqui -->
+    </div>
+    <form action="/send" method="post" class="message-input">
+        <input type="text" name="username" placeholder="Seu nome" required>
+        <input type="text" name="message" placeholder="Sua mensagem" required>
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>
